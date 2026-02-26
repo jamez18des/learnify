@@ -44,7 +44,9 @@ app.add_middleware(
 # NEVER paste your actual key into this file.
 # In terminal run: export OPENAI_API_KEY="sk-your-key-here"
 # ─────────────────────────────────────────────────────────────
-client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
+import httpx
+client = openai.OpenAI(api_key=os.environ.get("OPENAI_API_KEY"),http_client=httpx.Client())
+
 
 
 # ─────────────────────────────────────────────────────────────
