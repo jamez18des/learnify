@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Learnify — Learn in Your Language</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+  <style>
+    /* ══════════════════════════════════════════
+       VARIABLES & RESET
+    ══════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #080810;
+      --surface:   #111118;
+      --surface2:  #18181f;
+      --surface3:  #202028;
+      --border:    #28283a;
+      --border2:   #35354a;
+      --text:      #eeeef8;
+      --muted:     #6868a0;
+      --muted2:    #9090c0;
+      --accent:    #7c5cfc;
+      --accent2:   #fc5c7d;
+      --green:     #4ade80;
+      --yellow:    #fbbf24;
+      --r: 16px;
+      --head: 'Syne', sans-serif;
+      --body: 'DM Sans', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ══════════════════════════════════════════
+       BACKGROUND GLOW ORBS
+    ══════════════════════════════════════════ */
+    .orb {
+      position: fixed; border-radius: 50%;
+      filter: blur(130px); opacity: 0.12;
+      pointer-events: none; z-index: 0;
+    }
+    .orb1 { width:700px; height:700px; background:var(--accent); top:-300px; left:-200px; }
+    .orb2 { width:500px; height:500px; background:var(--accent2); bottom:-200px; right:-100px; }
+
+    /* ══════════════════════════════════════════
+       LAYOUT
+    ══════════════════════════════════════════ */
+    .wrap { max-width: 880px; margin: 0 auto; padding: 0 20px; position: relative; z-index: 1; }
+
+    /* ══════════════════════════════════════════
+       HEADER
+    ══════════════════════════════════════════ */
+    header { text-align: center; padding: 48px 0 8px; }
+
+    .logo {
+      font-family: var(--head);
+      font-size: clamp(2.8rem, 7vw, 4.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #ffffff 0%, var(--accent) 55%, var(--accent2) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      letter-spacing: -2px; line-height: 1;
+    }
+
+    .tagline { color: var(--muted2); font-size: 1rem; margin-top: 10px; }
+
+    /* ══════════════════════════════════════════
+       CARDS
+    ══════════════════════════════════════════ */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 28px;
+      margin: 20px 0;
+    }
+
+    .step-label {
+      font-family: var(--head);
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .step-label::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ══════════════════════════════════════════
+       THEME GRID — 5 CARDS
+    ══════════════════════════════════════════ */
+    .theme-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+    }
+
+    @media (max-width: 560px) {
+      .theme-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    .theme-card {
+      background: var(--surface2);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 18px 6px 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      user-select: none;
+      position: relative;
+    }
+
+    .theme-card:hover { border-color: var(--accent); transform: translateY(-3px); }
+
+    .theme-card.active {
+      border-color: var(--accent);
+      background: rgba(124,92,252,0.13);
+      box-shadow: 0 0 24px rgba(124,92,252,0.22);
+    }
+
+    .theme-card.active::after {
+      content: '✓';
+      position: absolute;
+      top: 6px; right: 8px;
+      font-size: 0.65rem;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .t-emoji { font-size: 1.9rem; display: block; margin-bottom: 7px; }
+    .t-name  { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .theme-card.active .t-name { color: var(--text); }
+
+    /* Custom theme input */
+    .custom-theme-wrap {
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .custom-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--muted);
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* ══════════════════════════════════════════
+       FORM ELEMENTS
+    ══════════════════════════════════════════ */
+    .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    @media (max-width: 560px) { .row2 { grid-template-columns: 1fr; } }
+
+    .field { display: flex; flex-direction: column; gap: 7px; }
+
+    label {
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+    }
+
+    input, select {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--body);
+      font-size: 0.93rem;
+      padding: 11px 14px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.18s;
+      -webkit-appearance: none;
+    }
+
+    input::placeholder { color: var(--muted); }
+    input:focus, select:focus { border-color: var(--accent); }
+    select option { background: #18181f; }
+
+    /* ══════════════════════════════════════════
+       GENERATE BUTTON
+    ══════════════════════════════════════════ */
+    .btn {
+      width: 100%; margin-top: 20px;
+      padding: 15px;
+      background: linear-gradient(135deg, var(--accent) 0%, #a05cfc 100%);
+      border: none; border-radius: 11px;
+      color: #fff;
+      font-family: var(--head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 0.3px;
+      transition: all 0.2s;
+    }
+
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(124,92,252,0.38); }
+    .btn:active { transform: translateY(0); }
+    .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2.5px solid rgba(255,255,255,0.25);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+      margin-right: 8px; vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══════════════════════════════════════════
+       ERROR BOX
+    ══════════════════════════════════════════ */
+    .error {
+      background: rgba(252,92,125,0.1);
+      border: 1px solid rgba(252,92,125,0.4);
+      border-radius: 10px;
+      padding: 13px 16px;
+      color: #ff8fab;
+      font-size: 0.88rem;
+      margin-top: 14px;
+      display: none;
+    }
+
+    /* ══════════════════════════════════════════
+       RESULT SECTION
+    ══════════════════════════════════════════ */
+    #result { display: none; }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .fade { animation: fadeUp 0.45s ease forwards; }
+
+    /* Badges row */
+    .badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+
+    .badge {
+      border-radius: 7px;
+      padding: 4px 11px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .badge-theme { background: rgba(124,92,252,0.18); border: 1px solid rgba(124,92,252,0.5); color: #a88cff; }
+    .badge-level { background: rgba(252,92,125,0.14); border: 1px solid rgba(252,92,125,0.4); color: #ff8fab; }
+    .badge-time  { color: var(--muted2); font-size: 0.78rem; font-weight: 500; margin-left: auto; }
+
+    /* Explanation */
+    .explanation {
+      line-height: 1.9;
+      font-size: 0.97rem;
+      color: #ccccee;
+      white-space: pre-wrap;
+    }
+
+    /* Key points */
+    .points { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+
+    .points li {
+      background: var(--surface2);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 9px 9px 0;
+      padding: 10px 15px;
+      font-size: 0.9rem;
+      color: #b8b8e0;
+      line-height: 1.55;
+    }
+
+    /* ══════════════════════════════════════════
+       QUIZ
+    ══════════════════════════════════════════ */
+    .quiz-stack { display: flex; flex-direction: column; gap: 26px; }
+
+    .q-num {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 24px; height: 24px;
+      background: var(--accent);
+      color: #fff;
+      font-family: var(--head);
+      font-size: 0.68rem;
+      font-weight: 700;
+      border-radius: 7px;
+      margin-right: 9px;
+      flex-shrink: 0;
+    }
+
+    .q-text {
+      font-weight: 600;
+      font-size: 0.94rem;
+      line-height: 1.5;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      color: var(--text);
+    }
+
+    .opts { display: flex; flex-direction: column; gap: 7px; }
+
+    .opt {
+      background: var(--surface2);
+      border: 1.5px solid var(--border);
+      border-radius: 9px;
+      padding: 11px 15px;
+      cursor: pointer;
+      font-size: 0.87rem;
+      color: var(--text);
+      font-family: var(--body);
+      text-align: left;
+      transition: all 0.14s;
+    }
+
+    .opt:hover:not(:disabled) { border-color: var(--accent); background: rgba(124,92,252,0.08); }
+    .opt.correct  { border-color: var(--green);   background: rgba(74,222,128,0.1); color: var(--green); }
+    .opt.wrong    { border-color: var(--accent2);  background: rgba(252,92,125,0.1); color: #ff8fab; }
+    .opt:disabled { cursor: default; }
+
+    .q-exp {
+      margin-top: 10px;
+      padding: 10px 14px;
+      background: rgba(74,222,128,0.07);
+      border-radius: 8px;
+      font-size: 0.82rem;
+      color: #8dd4a8;
+      line-height: 1.6;
+      display: none;
+    }
+
+    /* Score banner */
+    .score {
+      margin-top: 20px;
+      padding: 18px;
+      background: linear-gradient(135deg, rgba(124,92,252,0.15), rgba(74,222,128,0.08));
+      border: 1px solid rgba(124,92,252,0.35);
+      border-radius: 12px;
+      text-align: center;
+      font-family: var(--head);
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: none;
+    }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      text-align: center;
+      padding: 48px 0 32px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<div class="wrap">
+
+  <!-- ── Header ── -->
+  <header>
+    <div class="logo">Learnify</div>
+    <p class="tagline">Any subject. Your language. Finally makes sense.</p>
+  </header>
+
+  <!-- ── Step 1: Theme ── -->
+  <div class="card">
+    <div class="step-label">Step 1 — Choose Your Theme</div>
+
+    <div class="theme-grid" id="themeGrid">
+      <div class="theme-card" data-theme="roblox" onclick="pickTheme(this)">
+        <span class="t-emoji">🎮</span>
+        <span class="t-name">Roblox</span>
+      </div>
+      <div class="theme-card" data-theme="football" onclick="pickTheme(this)">
+        <span class="t-emoji">⚽</span>
+        <span class="t-name">Football</span>
+      </div>
+      <div class="theme-card" data-theme="fortnite" onclick="pickTheme(this)">
+        <span class="t-emoji">🏆</span>
+        <span class="t-name">Fortnite</span>
+      </div>
+      <div class="theme-card" data-theme="jujutsu_kaisen" onclick="pickTheme(this)">
+        <span class="t-emoji">🌀</span>
+        <span class="t-name">JJK</span>
+      </div>
+      <div class="theme-card" data-theme="naruto" onclick="pickTheme(this)">
+        <span class="t-emoji">🍥</span>
+        <span class="t-name">Naruto</span>
+      </div>
+    </div>
+
+    <!-- Custom theme input -->
+    <div class="custom-theme-wrap">
+      <span class="custom-label">Or type your own:</span>
+      <input
+        id="customThemeInput"
+        type="text"
+        placeholder="e.g. Harry Potter, Minecraft, F1 Racing..."
+        oninput="onCustomTheme(this.value)"
+        style="flex:1"
+      />
+    </div>
+  </div>
+
+  <!-- ── Step 2: Topic + Settings ── -->
+  <div class="card">
+    <div class="step-label">Step 2 — What Are You Learning?</div>
+
+    <div class="row2">
+      <div class="field">
+        <label for="topic">Topic</label>
+        <input id="topic" type="text" placeholder="e.g. Quadratic Equations, WW2, DNA replication..." />
+      </div>
+      <div class="field">
+        <label for="subject">Subject</label>
+        <input id="subject" type="text" placeholder="e.g. Maths, History, Biology..." />
+      </div>
+    </div>
+
+    <div class="row2" style="margin-top:14px">
+      <div class="field">
+        <label for="level">Level</label>
+        <select id="level">
+          <option value="ks2">Key Stage 2 — Ages 7–11</option>
+          <option value="ks3">Key Stage 3 — Ages 11–14</option>
+          <option value="gcse" selected>GCSE — Ages 14–16</option>
+          <option value="a_level">A-Level — Ages 16–18</option>
+          <option value="university">University / Degree</option>
+        </select>
+      </div>
+      <div class="field">
+        <label for="qcount">Quiz Questions</label>
+        <select id="qcount">
+          <option value="0">No quiz</option>
+          <option value="3">3 questions</option>
+          <option value="5" selected>5 questions</option>
+          <option value="10">10 questions</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn" id="genBtn" onclick="generate()">Generate My Lesson →</button>
+    <div class="error" id="errBox"></div>
+  </div>
+
+  <!-- ── Result ── -->
+  <div id="result">
+
+    <!-- Explanation -->
+    <div class="card fade" id="expCard">
+      <div class="badges">
+        <span class="badge badge-theme" id="badgeTheme"></span>
+        <span class="badge badge-level" id="badgeLevel"></span>
+        <span class="badge-time" id="badgeTime"></span>
+      </div>
+      <p class="explanation" id="expText"></p>
+    </div>
+
+    <!-- Key Points -->
+    <div class="card fade" id="kpCard" style="display:none">
+      <div class="step-label">Key Takeaways</div>
+      <ul class="points" id="kpList"></ul>
+    </div>
+
+    <!-- Quiz -->
+    <div class="card fade" id="quizCard" style="display:none">
+      <div class="step-label">Test Yourself</div>
+      <div class="quiz-stack" id="quizStack"></div>
+      <div class="score" id="scoreBanner"></div>
+    </div>
+
+  </div>
+
+  <footer>Learnify v2 &mdash; built for students who learn differently</footer>
+
+</div>
+
+<!-- ════════════════════════════════════════
+     JAVASCRIPT
+════════════════════════════════════════ -->
+<script>
+
+// ── Config ──────────────────────────────
+// Change this when you deploy the backend online
+const API = "http://localhost:8000";
+
+// ── State ───────────────────────────────
+let selectedTheme = null;
+let answered      = {};
+let correct       = {};
+let totalQ        = 0;
+
+// ── Theme Selection ──────────────────────
+function pickTheme(el) {
+  document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  selectedTheme = el.dataset.theme;
+  // Clear custom input when a card is picked
+  document.getElementById('customThemeInput').value = '';
+}
+
+function onCustomTheme(val) {
+  if (val.trim()) {
+    // Deselect all cards — user is using custom theme
+    document.querySelectorAll('.theme-card').forEach(c => c.classList.remove('active'));
+    selectedTheme = val.trim();
+  } else {
+    selectedTheme = null;
+  }
+}
+
+// ── Generate Lesson ──────────────────────
+async function generate() {
+  const topic   = document.getElementById('topic').value.trim();
+  const subject = document.getElementById('subject').value.trim();
+  const level   = document.getElementById('level').value;
+  const qcount  = parseInt(document.getElementById('qcount').value);
+  const errBox  = document.getElementById('errBox');
+  const btn     = document.getElementById('genBtn');
+
+  errBox.style.display = 'none';
+
+  // Validation
+  if (!selectedTheme)  return showErr('Please choose a theme or type your own.');
+  if (!topic)          return showErr('Please enter a topic.');
+  if (!subject)        return showErr('Please enter the subject.');
+
+  // Loading state
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Generating your lesson...';
+  document.getElementById('result').style.display = 'none';
+
+  try {
+    const res = await fetch(`${API}/learn`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        topic,
+        subject,
+        difficulty: level,
+        theme: selectedTheme,
+        include_quiz: qcount > 0,
+        quiz_question_count: qcount
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.detail || `Server error ${res.status}`);
+    }
+
+    render(await res.json());
+
+  } catch (e) {
+    // Demo mode — runs when backend isn't connected
+    if (e.message.toLowerCase().includes('fetch') || e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+      render(demo(topic, subject, selectedTheme));
+    } else {
+      showErr(e.message);
+    }
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = 'Generate My Lesson →';
+  }
+}
+
+// ── Render Response ──────────────────────
+function render(data) {
+  // Badges
+  document.getElementById('badgeTheme').textContent = '🎯 ' + data.theme;
+  document.getElementById('badgeLevel').textContent = data.difficulty.split('(')[0].trim();
+  document.getElementById('badgeTime').textContent  = `~${data.estimated_read_time_minutes} min read`;
+
+  // Explanation
+  document.getElementById('expText').textContent = data.explanation;
+
+  // Key points
+  const kpCard = document.getElementById('kpCard');
+  const kpList = document.getElementById('kpList');
+  if (data.key_points?.length) {
+    kpList.innerHTML = data.key_points.map(p => `<li>${p}</li>`).join('');
+    kpCard.style.display = 'block';
+  } else {
+    kpCard.style.display = 'none';
+  }
+
+  // Quiz
+  const quizCard  = document.getElementById('quizCard');
+  const quizStack = document.getElementById('quizStack');
+  answered = {}; correct = {}; totalQ = 0;
+
+  if (data.quiz?.length) {
+    totalQ = data.quiz.length;
+    quizStack.innerHTML = data.quiz.map((q, i) => buildQuestion(q, i)).join('');
+    document.getElementById('scoreBanner').style.display = 'none';
+    quizCard.style.display = 'block';
+  } else {
+    quizCard.style.display = 'none';
+  }
+
+  document.getElementById('result').style.display = 'block';
+  document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// ── Build a Quiz Question ────────────────
+function buildQuestion(q, i) {
+  const opts = q.options.map((opt, oi) => {
+    const safeOpt  = opt.replace(/'/g, "\\'");
+    const safeCorr = q.correct_answer.replace(/'/g, "\\'");
+    const safeExp  = q.explanation.replace(/'/g, "\\'");
+    return `<button class="opt" onclick="answer(${i},'${safeOpt}','${safeCorr}',${oi},'${safeExp}')" id="o${i}-${oi}">${opt}</button>`;
+  }).join('');
+
+  return `
+    <div id="qi${i}">
+      <div class="q-text"><span class="q-num">${i + 1}</span>${q.question}</div>
+      <div class="opts" id="opts${i}">${opts}</div>
+      <div class="q-exp" id="exp${i}">${q.explanation}</div>
+    </div>`;
+}
+
+// ── Handle Answer Click ──────────────────
+function answer(qi, selected, correctAns, optIdx, explanation) {
+  if (answered[qi] !== undefined) return;
+  answered[qi] = selected;
+  correct[qi]  = selected === correctAns;
+
+  const btns = document.querySelectorAll(`#opts${qi} .opt`);
+  btns.forEach((b, i) => {
+    b.disabled = true;
+    if (b.textContent.trim() === correctAns.trim()) b.classList.add('correct');
+    else if (i === optIdx && !correct[qi])           b.classList.add('wrong');
+  });
+
+  document.getElementById(`exp${qi}`).style.display = 'block';
+
+  if (Object.keys(answered).length === totalQ) showScore();
+}
+
+// ── Show Score ───────────────────────────
+function showScore() {
+  const got  = Object.values(correct).filter(Boolean).length;
+  const pct  = Math.round((got / totalQ) * 100);
+  const emoj = pct === 100 ? '🏆' : pct >= 70 ? '🎉' : pct >= 50 ? '💪' : '📚';
+  const msg  = pct === 100  ? 'Perfect score — absolutely elite.'
+             : pct >= 80   ? 'Brilliant work!'
+             : pct >= 60   ? 'Solid — review the ones you missed.'
+             : 'Keep going — re-read the lesson and try again!';
+
+  const banner = document.getElementById('scoreBanner');
+  banner.innerHTML = `${emoj} ${got}/${totalQ} (${pct}%) — ${msg}`;
+  banner.style.display = 'block';
+  banner.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// ── Helpers ──────────────────────────────
+function showErr(msg) {
+  const b = document.getElementById('errBox');
+  b.textContent = '⚠️ ' + msg;
+  b.style.display = 'block';
+}
+
+// ── Demo Data ────────────────────────────
+// Runs automatically if the backend server isn't running.
+// This lets you test the full UI experience without needing the API.
+function demo(topic, subject, theme) {
+  topic   = topic   || 'Binary Search Trees';
+  subject = subject || 'Computer Science';
+  theme   = theme   || 'Naruto';
+
+  return {
+    topic, subject, theme,
+    difficulty: 'GCSE (Ages 14–16)',
+    estimated_read_time_minutes: 3,
+    explanation: `[DEMO MODE — backend not connected]\n\nImagine you're a ninja in the ${theme} world, and the Hokage has sent you on a mission: find a specific scroll from the Great Archives of Konoha. The archives aren't a chaotic pile — they're organised exactly like a Binary Search Tree.\n\nAt the very top of the archive is the Root Scroll. Every scroll to the LEFT is ranked lower (smaller values), and every scroll to the RIGHT is ranked higher (larger values). This is the core rule: left is always smaller, right is always bigger.\n\nWhen you're searching for a scroll, you start at the Root and ask yourself — is what I need smaller or bigger than this? Go left if smaller, right if bigger. You repeat this at every fork until you find it. Instead of checking every scroll one by one, you cut your search in half at each step.\n\nThis is O(log n) time complexity — even with 1,000,000 scrolls, you'd find yours in about 20 moves. That's Special Grade efficiency.\n\nInserting a new scroll follows the same path — walk down until you find an empty spot that fits the rule. Deletion is trickier, like removing a ninja from a squad without breaking the chain, but the same logic applies throughout.`,
+    key_points: [
+      'Every node has at most 2 children — left (smaller) and right (bigger). Like splitting a mission into two paths.',
+      'Searching is O(log n) — you halve your options at every step.',
+      'Insertion follows the same search path, placing the new node at the correct empty spot.',
+      'An unbalanced BST degrades to O(n) — like a ninja with no training.',
+      'In-order traversal (left → root → right) returns all values in sorted order.'
+    ],
+    quiz: [
+      {
+        question: 'In a Binary Search Tree, where do smaller values always go?',
+        options: ['To the right of the parent', 'To the left of the parent', 'At the root', 'Randomly placed'],
+        correct_answer: 'To the left of the parent',
+        explanation: 'Left is always smaller in a BST — like going left in the archive for lower-ranked scrolls.'
+      },
+      {
+        question: 'What is the time complexity for searching in a balanced BST?',
+        options: ['O(n)', 'O(n²)', 'O(log n)', 'O(1)'],
+        correct_answer: 'O(log n)',
+        explanation: 'Each step halves the remaining options — Special Grade efficiency. 20 steps for 1 million items.'
+      },
+      {
+        question: 'What does in-order traversal of a BST produce?',
+        options: ['Random order', 'Sorted ascending order', 'Largest to smallest', 'Root and leaves only'],
+        correct_answer: 'Sorted ascending order',
+        explanation: 'Left → root → right always visits values from smallest to largest because left is always the smaller side.'
+      },
+      {
+        question: 'What happens to BST efficiency if the tree is completely unbalanced?',
+        options: ['Gets faster', 'Stays the same', 'Degrades to O(n)', 'Becomes O(log n²)'],
+        correct_answer: 'Degrades to O(n)',
+        explanation: 'An unbalanced tree is just a straight line — you check every node, like searching every scroll manually.'
+      },
+      {
+        question: 'When inserting into a BST, where does the new value always land?',
+        options: ['At the root', 'At a leaf position', 'In the middle', 'Replacing an existing node'],
+        correct_answer: 'At a leaf position',
+        explanation: 'You follow the search path until you hit an empty spot — that empty spot is always a leaf.'
+      }
+    ]
+  };
+}
+
+</script>
+</body>
+</html>
